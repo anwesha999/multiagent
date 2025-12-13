@@ -1,23 +1,35 @@
-# Multi-Agent System with Ollama
+# Multi-Agentic AI — Minimal Python Codebase
 
-A simple multi-agent system that uses Ollama (running locally) to orchestrate three specialized agents: Planner, Worker, and Reviewer. This system demonstrates how multiple AI agents can work together to plan, execute, and review tasks.
+This repository demonstrates two multi-agent architectures:
+
+1. **Ollama-based System**: Uses local LLM (Llama3 via Ollama) with Planner → Worker → Reviewer workflow
+2. **Async Message-Bus System**: Lightweight async framework with Planner → Developer → Tester workflow
 
 ## 🏗️ Architecture
 
-The system consists of:
+### System 1: Ollama-based Multi-Agent System
 
+Uses Ollama (running locally) to orchestrate three specialized agents:
 - **Planner Agent**: Breaks down goals into actionable steps
 - **Worker Agent**: Executes the planned tasks
 - **Reviewer Agent**: Reviews and improves the output
 - **Orchestrator**: Coordinates the workflow between all agents
 
+### System 2: Async Message-Bus System
+
+Lightweight async framework where agents communicate via a central MessageBus:
+- **Planner Agent**: Receives goals and decomposes them into tasks
+- **Developer Agent**: Takes tasks and produces artifacts
+- **Tester Agent**: Verifies artifacts and reports results
+- **MessageBus**: Routes messages between agents asynchronously
+
 ## 📋 Prerequisites
 
 1. **Python 3.7+** installed on your system
-2. **Ollama** installed and running
-3. **llama3 model** pulled in Ollama
+2. **Ollama** (for System 1 only) - installed and running
+3. **llama3 model** (for System 1 only) - pulled in Ollama
 
-### Installing Ollama
+### Installing Ollama (System 1 only)
 
 1. Visit [https://ollama.ai](https://ollama.ai) and download Ollama for your operating system
 2. Install Ollama following the instructions for your OS
@@ -37,7 +49,13 @@ The system consists of:
    cd multiagent
    ```
 
-2. **Install Python dependencies:**
+2. **Create a virtual environment (recommended):**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install Python dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
@@ -45,8 +63,12 @@ The system consists of:
    This will install:
    - `openai==1.40.0` - OpenAI Python client (works with Ollama's OpenAI-compatible API)
    - `python-dotenv` - For environment variable management
+   - `streamlit` - For web UI (optional)
+   - `rich` - For pretty logging (optional)
 
-## 🎯 Running the System
+## 🎯 Running the Systems
+
+### System 1: Ollama-based Multi-Agent System
 
 1. **Make sure Ollama is running:**
    ```bash
@@ -70,24 +92,53 @@ The system consists of:
    python run.py
    ```
 
+4. **Run with Web UI (Streamlit):**
+   ```bash
+   streamlit run ui_app.py
+   ```
+   Then open your browser at `http://localhost:8501`
+
+### System 2: Async Message-Bus System
+
+Run the async message-bus based system:
+
+```bash
+python3 run_async.py
+```
+
+This demonstrates agents communicating via async message passing.
+
 ## 📁 Project Structure
 
 ```
 multiagent/
-├── agents/
+├── agent_framework/          # Async message bus framework
 │   ├── __init__.py
-│   ├── base_agent.py      # Base agent class
-│   ├── planner.py         # Planner agent
-│   ├── worker.py          # Worker agent
-│   └── reviewer.py        # Reviewer agent
-├── llm_client.py          # Ollama client wrapper
-├── orchestrator.py        # Orchestrates the multi-agent workflow
-├── run.py                 # Main entry point
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+│   ├── bus.py               # MessageBus implementation
+│   └── agent.py             # BaseAgent for async agents
+├── agents/                   # Ollama-based agents
+│   ├── __init__.py
+│   ├── base_agent.py        # Base agent class
+│   ├── planner.py           # Planner agent
+│   ├── worker.py            # Worker agent
+│   └── reviewer.py          # Reviewer agent
+├── agents_async/             # Async message-bus agents
+│   ├── __init__.py
+│   ├── planner.py           # Planner agent (async)
+│   ├── developer.py         # Developer agent (async)
+│   └── tester.py            # Tester agent (async)
+├── llm_client.py            # Ollama client wrapper
+├── orchestrator.py          # Orchestrates Ollama-based workflow
+├── run.py                   # Main entry point (Ollama system)
+├── run_async.py             # Main entry point (async system)
+├── ui_app.py                # Streamlit web UI
+├── requirements.txt         # Python dependencies
+└── README.md                # This file
 ```
 
 ## 🔧 How It Works
+
+### System 1: Ollama-based System
 
 1. **Planning Phase**: The Planner Agent receives a goal and breaks it down into 3-7 clear steps
 2. **Execution Phase**: The Worker Agent executes the planned steps and produces results
@@ -95,9 +146,16 @@ multiagent/
 
 The Orchestrator coordinates all three phases sequentially.
 
+### System 2: Async Message-Bus System
+
+1. **Message Bus**: Central communication hub that routes messages between agents
+2. **Agent Communication**: Agents send messages to specific recipients or broadcast to all
+3. **Async Processing**: Each agent runs in its own async task loop
+4. **Workflow**: Planner → Developer → Tester with message passing
+
 ## 🎨 Customization
 
-### Changing the Goal
+### Changing the Goal (Ollama System)
 
 Edit `run.py` to change the goal:
 
@@ -105,7 +163,7 @@ Edit `run.py` to change the goal:
 goal = "Your custom goal here"
 ```
 
-### Using a Different Model
+### Using a Different Model (Ollama System)
 
 Edit `llm_client.py` to use a different Ollama model:
 
@@ -119,10 +177,8 @@ payload = {
 
 ### Modifying Agent Behavior
 
-Edit the agent files in the `agents/` directory to customize their prompts and behavior:
-- `agents/planner.py` - Modify planning logic
-- `agents/worker.py` - Modify execution logic
-- `agents/reviewer.py` - Modify review logic
+- **Ollama agents**: Edit files in `agents/` directory
+- **Async agents**: Edit files in `agents_async/` directory
 
 ## 🐛 Troubleshooting
 
@@ -143,10 +199,11 @@ If you get model errors:
 If you get import errors:
 - Make sure you're in the project directory
 - Verify dependencies are installed: `pip list | grep openai`
+- Make sure virtual environment is activated
 
 ## 📝 Example Output
 
-When you run `python3 run.py`, you'll see:
+### Ollama System (`python3 run.py`)
 
 ```
 🧠 Planning...
@@ -160,6 +217,18 @@ When you run `python3 run.py`, you'll see:
 
 Final Output:
 [Final polished result]
+```
+
+### Async System (`python3 run_async.py`)
+
+```
+[planner] started
+[developer] started
+[tester] started
+[Planner] handling Message(...)
+[Developer] got Message(...)
+[Tester] received Message(...)
+...
 ```
 
 ## 🤝 Contributing
